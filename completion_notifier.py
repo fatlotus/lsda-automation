@@ -49,6 +49,10 @@ def process_log_line(ses, bucket, target_directory, temp_directory, message):
       match = re.match(r"submissions/([^/]+)/submit$", branch_name)
       cnetid = match.group(1) if match else None
       
+      # Route backbone/ submissions properly.
+      if cnetid == "backbone":
+         cnetid = "jarcher"
+      
       # if possible;
       if cnetid:
          ses.send_email(
