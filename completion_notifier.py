@@ -8,7 +8,7 @@
 import boto.s3, boto.ses
 from boto.s3.key import Key
 
-import gevent, pika, functools, shutil, yaml, tempfile, json, os, re
+import gevent, pika, functools, shutil, yaml, tempfile, json, os, re, logging
 
 # Too happy?
 EMAIL_TEMPLATE = """\
@@ -64,9 +64,13 @@ def process_log_line(ses, bucket, target_directory, temp_directory, message):
       
    else:
       
+      # Filter out extraneous messages.
+      if message["level"] < logging.WARN:
+         return
+      
       # otherwise, append the line to the local logging file.
       with open(stdout_path, "a") as fp:
-         fp.write("{level:5} {message}\n".format(**message))
+         fp.write("{message}\n".format(**message))
 
 def main():
    # Read configuration.
