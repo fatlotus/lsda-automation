@@ -62,13 +62,8 @@ def process_log_line(ses, bucket, target_directory, temp_directory, message):
          fp.write("{level:5} {message}\n".format(message))
 
 def main():
-   # Begin parsing arguments to the daemon.
-   parser = argparse.ArgumentParser(description="Run a Python email minion.")
-   parser.add_argument("--amqp", required=True)
-   parser.add_argument("--bucket_name", required=True)
-   parser.add_argument("--target_directory", required=True)
-   
-   options = parser.parse_args()
+   # Read configuration.
+   options = yaml.loads(open("config.yaml"))
    
    # Choose a temporary working directory.
    temp_directory = tempfile.mkdtemp()
@@ -79,11 +74,12 @@ def main():
       email_connection = ses.connect_to_region("us-east-1")
       storage_connection = s3.connect_s3()
       
-      target_bucket = storage_connection.get_bucket(options.bucket_name)
-      target_directory = options.target_directory
+      target_bucket = storage_connection.get_bucket(
+                        options["submit_bucket_name"])
+      target_directory = options["submit_target_directory"]
       
       # Connect to AMQP.
-      parameters = pika.ConnectionParameters(options.amqp)
+      parameters = pika.ConnectionParameters(options["amqp"])
       
       connection = pika.BlockingConnection(parameters)
       channel = connection.channel()
