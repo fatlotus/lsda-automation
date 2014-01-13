@@ -17,7 +17,7 @@ Hello there!
 One of your compute jobs has just finished; the results are located at
 the page below.
 
-http://ml-submissions.s3-website-us-east-1.amazonaws.com/?{task_id}
+http://ml-submissions.s3-website-us-east-1.amazonaws.com/results/{task_id}
 
 Best of luck,
 
