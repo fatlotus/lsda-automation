@@ -5,12 +5,15 @@
 # Author: Jeremy Archer <jarcher@uchicago.edu>
 # Date: 12 January 2013
 
-from boto import ses, s3
+import boto.s3
+import boto.ses
 from boto.s3.key import Key
 import gevent
 import pika
 import functools
 import shutil
+import yaml
+import tempfile
 
 # Too happy?
 EMAIL_TEMPLATE = """\
@@ -63,7 +66,7 @@ def process_log_line(ses, bucket, target_directory, temp_directory, message):
 
 def main():
    # Read configuration.
-   options = yaml.loads(open("config.yaml"))
+   options = yaml.load(open("config.yaml"))
    
    # Choose a temporary working directory.
    temp_directory = tempfile.mkdtemp()
@@ -71,8 +74,8 @@ def main():
    try:
       
       # Connect to s3.
-      email_connection = ses.connect_to_region("us-east-1")
-      storage_connection = s3.connect_s3()
+      email_connection = boto.ses.connect_to_region("us-east-1")
+      storage_connection = boto.connect_s3()
       
       target_bucket = storage_connection.get_bucket(
                         options["submit_bucket_name"])
@@ -86,8 +89,8 @@ def main():
       
       # Subscribe to the worker queue.
       queue_name = channel.queue_declare(exclusive=True).method.queue
-   
-      copy_channel.queue_bind(
+      
+      channel.queue_bind(
          exchange = "lsda_logs",
          queue = queue_name,
          routing_key = "stderr.*"

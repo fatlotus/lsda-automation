@@ -1,3 +1,4 @@
 gevent
 pika
 boto
+yaml
