@@ -5,15 +5,10 @@
 # Author: Jeremy Archer <jarcher@uchicago.edu>
 # Date: 12 January 2013
 
-import boto.s3
-import boto.ses
+import boto.s3, boto.ses
 from boto.s3.key import Key
-import gevent
-import pika
-import functools
-import shutil
-import yaml
-import tempfile
+
+import gevent, pika, functools, shutil, yaml, tempfile, json, os, re
 
 # Too happy?
 EMAIL_TEMPLATE = """\
@@ -34,12 +29,16 @@ def process_log_line(ses, bucket, target_directory, temp_directory, message):
    Processes a log line from AMQP.
    """
    
-   # Determine where to write the output for this task.
+   # Make sure this message is associated with a task.
    task_id = message["task_id"]
+   if not task_id:
+      return
+   
+   # Determine where to write the output for this task.
    stdout_path = os.path.join(temp_directory, task_id + ".txt")
    
    # If the stream has closed,
-   if message["type"] == "done":
+   if message["type"] == "close":
       
       # write the results to S3,
       key = bucket.new_key(os.path.join(target_directory, task_id))
@@ -55,14 +54,15 @@ def process_log_line(ses, bucket, target_directory, temp_directory, message):
          ses.send_email(
             "\"Cylon Jeremy\" <jarcher@uchicago.edu>",
             "AUTO: Completed Run",
-            EMAIL_TEMPLATE.format(**locals())
+            EMAIL_TEMPLATE.format(**locals()),
+            [ "{0}@uchicago.edu".format(cnetid) ]
          )
       
    else:
       
       # otherwise, append the line to the local logging file.
       with open(stdout_path, "a") as fp:
-         fp.write("{level:5} {message}\n".format(message))
+         fp.write("{level:5} {message}\n".format(**message))
 
 def main():
    # Read configuration.
@@ -99,12 +99,15 @@ def main():
       # Begin consuming all remaining AMQP messages.
       def handler(channel, method, properties, body):
          
+         print("Got message: " + body)
+         
          # Process the given AMQP message.
          payload = json.loads(body)
-         process_log_line(ses, bucket, target_directory,
+         process_log_line(email_connection, target_bucket, target_directory,
                           temp_directory, payload)
       
       channel.basic_consume(handler, queue_name, no_ack = True)
+      channel.start_consuming()
    
    finally:
       # Clean up after ourselves.
