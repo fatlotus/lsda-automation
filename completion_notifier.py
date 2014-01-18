@@ -56,7 +56,7 @@ def process_log_line(ses, bucket, target_directory, temp_directory, message):
       # if possible;
       if cnetid:
          ses.send_email(
-            "\"Cylon Jeremy\" <jarcher@uchicago.edu>",
+            "\"Bob the Build Bot\" <jarcher@uchicago.edu>",
             "AUTO: Completed Run",
             EMAIL_TEMPLATE.format(**locals()),
             [ "{0}@uchicago.edu".format(cnetid) ]
