@@ -17,7 +17,7 @@ Hello there!
 One of your compute jobs has just finished; the results are located at
 the page below.
 
-http://ml-submissions.s3-website-us-east-1.amazonaws.com/results/{task_id}
+http://nbviewer.ipython.org/url/ml-submissions.s3-website-us-east-1.amazonaws.com/results/{task_id}.ipynb
 
 Best of luck,
 
@@ -106,8 +106,6 @@ def main():
       
       # Begin consuming all remaining AMQP messages.
       def handler(channel, method, properties, body):
-         
-         print("Got message: " + body)
          
          # Process the given AMQP message.
          payload = json.loads(body)
