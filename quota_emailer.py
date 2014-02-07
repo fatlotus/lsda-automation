@@ -92,7 +92,7 @@ def main():
       # Sends an update to me every six hours.
       while True:
          trigger_update(zookeeper, email_connection)
-         time.sleep(6 * 3600)
+         time.sleep(48 * 3600)
       
    finally:
          
