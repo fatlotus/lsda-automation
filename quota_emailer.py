@@ -11,7 +11,7 @@ from kazoo.client import KazooClient
 
 import datetime, time, yaml, logging
 
-def trigger_update(zookeeper, email_connection):
+def trigger_update(zookeeper, email_connection, force = False):
    """
    Sends an email to me detailing the current status of the quotas in the fleet.
    """
@@ -48,6 +48,10 @@ def trigger_update(zookeeper, email_connection):
          # Display this as a ratio of usage.
          ratio = float(used) / float(limit)
          
+         # Display values if somebody is out of quota.
+         if ratio >= 0.95:
+           force = True
+         
          # Generate a new output row for this user.
          results.append(
            "{cnetid:<20} {used:15,.0f} {limit:15,.0f}  ({ratio:.0%})".format(
@@ -55,6 +59,10 @@ def trigger_update(zookeeper, email_connection):
       
       # Add two blank lines after each table.
       results += ["", ""]
+   
+   # Mask emails if superfluous.
+   if not force:
+     return
    
    # Construct the message body.
    message_body = "\n".join(results)
@@ -88,11 +96,15 @@ def main():
    email_connection = boto.ses.connect_to_region("us-east-1")
    
    try:
+      update_number = 0
       
-      # Sends an update to me every six hours.
+      # Sends an update to me every hour.
       while True:
-         trigger_update(zookeeper, email_connection)
-         time.sleep(48 * 3600)
+         trigger_update(zookeeper, email_connection,
+           force = (update_number % 48 == 0))
+         time.sleep(1 * 3600)
+         
+         update_number += 1
       
    finally:
          
