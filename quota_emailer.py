@@ -28,7 +28,7 @@ def trigger_update(zookeeper, email_connection, force = False):
       results.append("## {:<17} {:>15} {:>15}".
                           format(resource, "USED", "LIMIT"))
       
-      for cnetid in cnetids:
+      for cnetid in sorted(cnetids):
          # Find the upper limit for this user.
          try:
             limit = zookeeper.Counter("/quota_limit/{resource}/{cnetid}".
