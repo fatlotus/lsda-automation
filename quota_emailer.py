@@ -52,9 +52,14 @@ def trigger_update(zookeeper, email_connection, force = False):
          if ratio >= 0.95:
            force = True
          
+         # Display things with saner values.
+         if resource == "cpu_time":
+             used /= 3600
+             limit /= 3600
+         
          # Generate a new output row for this user.
          results.append(
-           "{cnetid:<20} {used:15,.0f} {limit:15,.0f}  ({ratio:.0%})".format(
+           "{cnetid:<20} {used:15,.1f} {limit:15,.1f}  ({ratio:.0%})".format(
              **locals()))
       
       # Add two blank lines after each table.
@@ -101,7 +106,7 @@ def main():
       # Sends an update to me every hour.
       while True:
          trigger_update(zookeeper, email_connection,
-           force = (update_number % 48 == 0))
+           force = (update_number % 24 == 0))
          time.sleep(1 * 3600)
          
          update_number += 1
