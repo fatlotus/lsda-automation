@@ -46,14 +46,17 @@ def trigger_update(zookeeper, email_connection, force = False):
             used = 0.0
          
          # Display this as a ratio of usage.
-         ratio = float(used) / float(limit)
+         try:
+             ratio = float(used) / float(limit)
+         except ZeroDivisionError:
+             ratio = 1
          
          # Display values if somebody is out of quota.
          if ratio >= 0.95:
            force = True
          
          # Display things with saner values.
-         if resource == "cpu_time":
+         if resource == "compute_time":
              used /= 3600
              limit /= 3600
          
