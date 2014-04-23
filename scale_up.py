@@ -22,6 +22,12 @@ def main():
     Main entry point for the automated scaling daemon.
     """
 
+    # Configure logging.
+    logging.basicConfig(
+        format = "%(asctime)-15s %(levelname)5s %(message)s",
+        level = logging.DEBUG
+    )
+
     # Read configuration.
     options = yaml.load(open("config.yaml"))
 
@@ -35,24 +41,26 @@ def main():
     group = AutoScaleConnection().get_all_groups(["LSDA Worker Pool"])[0]
 
     while True:
-        # See if we have 5s of activity.
-        for i in xrange(5):
+        # See if we have 30s of busy waiting.
+        for i in xrange(6):
             queue_length = get_queue_length(channel, "stable")
 
-            print("Queue length: {}".format(queue_length))
+            logging.info("Queue length: {}".format(queue_length))
 
             if queue_length == 0:
                 break
-            time.sleep(1)
+            time.sleep(5)
 
         else:
             # Scale up!
 
+            group.update()
             group.desired_capacity = min(
               group.desired_capacity + 2, group.max_size)
             group.update()
 
-            print("Triggering increase to {}".format(group.desired_capacity))
+            logging.info(
+              "Triggering increase to {}".format(group.desired_capacity))
 
             time.sleep(120)
 
