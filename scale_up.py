@@ -37,9 +37,6 @@ def main():
 
     channel = conn.channel()
 
-    # Fetch the ASG.
-    group = AutoScaleConnection().get_all_groups(["LSDA Worker Pool"])[0]
-
     while True:
         # See if we have 30s of busy waiting.
         for i in xrange(6):
@@ -54,7 +51,7 @@ def main():
         else:
             # Scale up!
 
-            group.update()
+            group = AutoScaleConnection().get_all_groups(["LSDA Worker Pool"])[0]
             group.desired_capacity = min(
               group.desired_capacity + 2, group.max_size)
             group.update()
