@@ -73,6 +73,8 @@ def process_log_line(ses, bucket, target_directory, temp_directory, message):
          fp.write("{message}\n".format(**message))
 
 def main():
+   return # Automation disabled.
+   
    # Read configuration.
    options = yaml.load(open("config.yaml"))
    
