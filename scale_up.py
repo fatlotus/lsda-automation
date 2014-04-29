@@ -25,7 +25,7 @@ def main():
     # Configure logging.
     logging.basicConfig(
         format = "%(asctime)-15s %(levelname)5s %(message)s",
-        level = logging.DEBUG
+        level = logging.INFO
     )
 
     # Read configuration.
@@ -38,8 +38,8 @@ def main():
     channel = conn.channel()
 
     while True:
-        # See if we have 30s of busy waiting.
-        for i in xrange(6):
+        # See if we have 2m of busy waiting.
+        for i in xrange(24):
             queue_length = get_queue_length(channel, "stable")
 
             logging.info("Queue length: {}".format(queue_length))
@@ -59,7 +59,7 @@ def main():
             logging.info(
               "Triggering increase to {}".format(group.desired_capacity))
 
-            time.sleep(120)
+            time.sleep(360)
 
         # Wait until next polling event.
         time.sleep(30)
