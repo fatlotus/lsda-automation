@@ -4,6 +4,8 @@ import time
 import logging
 import yaml
 
+DELAY = 5 * 60
+
 def get_queue_length(channel, queue_name):
     """
     Measures the length of the given queue.
@@ -38,8 +40,9 @@ def main():
     channel = conn.channel()
 
     while True:
-        # See if we have 2m of busy waiting.
-        for i in xrange(24):
+        # Ensure that we have things stuck in the queue for the given amount
+        # of time.
+        for i in xrange(DELAY / 5):
             queue_length = get_queue_length(channel, "stable")
 
             logging.info("Queue length: {}".format(queue_length))
@@ -50,7 +53,6 @@ def main():
 
         else:
             # Scale up!
-
             group = AutoScaleConnection().get_all_groups(["LSDA Worker Pool"])[0]
             group.desired_capacity = min(
               group.desired_capacity + 2, group.max_size)
@@ -59,7 +61,7 @@ def main():
             logging.info(
               "Triggering increase to {}".format(group.desired_capacity))
 
-            time.sleep(360)
+            time.sleep(300)
 
         # Wait until next polling event.
         time.sleep(30)
